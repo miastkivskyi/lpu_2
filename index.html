@@ -1,34 +1,23 @@
 <!doctype html>
 <html lang="uk">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Карта ЛПУ 2.0 — пошук клінік</title>
-<link rel="stylesheet" href="styles.css">
-</head>
-<body>
-<header class="top">
-  <div class="brand"><div class="logo">+</div><div><h1>Карта ЛПУ 2.0</h1><p>Пошук клінік за містом і спеціальністю</p></div></div>
-  <a class="toplink" href="https://www.google.com/maps/d/u/1/view?mid=1K7NXAhGSko0ppMx1Adt0ZRHnEi_jNCM&amp;usp=sharing" target="_blank" rel="noopener">Відкрити карту ↗</a>
-</header>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Карта ЛПУ 2.0 — пошук клінік</title><link rel="stylesheet" href="styles.css">
+</head><body>
+<header class="top"><div class="brand"><div class="logo">+</div><div><h1>Карта ЛПУ 2.0</h1><p>Пошук клінік за містом і спеціальністю</p></div></div><a class="toplink" href="https://www.google.com/maps/d/u/1/view?mid=1K7NXAhGSko0ppMx1Adt0ZRHnEi_jNCM&amp;usp=sharing" target="_blank" rel="noopener">Відкрити карту ↗</a></header>
 <main class="wrap">
-  <section class="intro" id="intro">
-    <div class="introtext"><span class="eyebrow">Єдина база медичних закладів</span><h2>Знайдіть клініку за містом або спеціальністю</h2><p>Оберіть місто, щоб побачити всі клініки та їхні рівні. Додайте спеціальність, щоб залишити лише відповідні заклади. Натисніть на клініку, щоб переглянути всі доступні спеціальності.</p></div>
-  </section>
-  <section class="map-panel" id="mapPanel">
-    <div class="panelhead"><div><h2>Карта ЛПУ 2.0</h2></div><a href="https://www.google.com/maps/d/u/1/view?mid=1K7NXAhGSko0ppMx1Adt0ZRHnEi_jNCM&amp;usp=sharing" target="_blank" rel="noopener">Відкрити окремо ↗</a></div>
-    <iframe id="mapFrame" title="Карта ЛПУ 2.0" src="https://www.google.com/maps/d/embed?mid=1K7NXAhGSko0ppMx1Adt0ZRHnEi_jNCM&amp;ehbc=2E312F" loading="lazy" allowfullscreen></iframe>
-  </section>
-  <section class="search-panel">
-    <div class="field specialty-field"><label for="specialty">Спеціальність / послуга</label><input id="specialty" list="specialties" autocomplete="off" placeholder="Наприклад: невролог, уролог, УЗД…"><datalist id="specialties"></datalist></div>
-    <div class="field"><label for="city">Місто</label><select id="city"><option value="">Усі міста</option></select></div>
-    <button id="clear" class="clear">Очистити</button>
-  </section>
-  <div class="resultbar" id="resultbar" hidden><div><h2>Результати пошуку</h2><p id="summary"></p></div></div>
-  <section id="results" class="results" hidden></section>
-  <div id="empty" class="empty" hidden>За цим запитом клінік не знайдено. Спробуйте іншу спеціальність або змініть фільтри.</div>
-  <div class="footnote" id="footnote">Список показує клініки за вибраним містом або спеціальністю. Натисніть «Показати всі спеціальності», щоб переглянути повний перелік спеціальностей клініки.</div>
-</main>
-<footer>Карта ЛПУ 2.0 · внутрішній інструмент пошуку</footer>
-<script src="app.js"></script>
-</body></html>
+<section class="intro" id="intro"><div class="introtext"><span class="eyebrow">Єдина база медичних закладів</span><h2>Знайдіть клініку за містом або спеціальністю</h2><p>Оберіть місто, щоб побачити всі клініки та їхні рівні. Додайте спеціальність, щоб залишити лише відповідні заклади. Натисніть на клініку, щоб переглянути спеціальності та додати нові.</p></div></section>
+<section class="map-panel" id="mapPanel"><div class="panelhead"><div><h2>Карта ЛПУ 2.0</h2></div><a href="https://www.google.com/maps/d/u/1/view?mid=1K7NXAhGSko0ppMx1Adt0ZRHnEi_jNCM&amp;usp=sharing" target="_blank" rel="noopener">Відкрити окремо ↗</a></div><iframe id="mapFrame" title="Карта ЛПУ 2.0" src="https://www.google.com/maps/d/embed?mid=1K7NXAhGSko0ppMx1Adt0ZRHnEi_jNCM&amp;ehbc=2E312F" loading="lazy" allowfullscreen></iframe></section>
+<section class="user-panel" id="userPanel">
+  <form id="authForm" class="auth-form">
+    <div><strong>Вхід у карту</strong><p class="muted">Вкажіть прізвище. Для адміністратора потрібен пароль.</p></div>
+    <label>Прізвище<input id="surname" required minlength="2" maxlength="80" autocomplete="family-name" placeholder="Ваше прізвище"></label>
+    <label>Пароль адміністратора <span class="muted">(лише для адміністратора)</span><input id="adminPassword" type="password" autocomplete="current-password" placeholder="Залиште порожнім для звичайного входу"></label>
+    <button class="add-btn" type="submit">Увійти</button>
+  </form>
+  <div id="userSignedIn" class="user-signed" hidden><strong id="userIdentity"></strong><span id="userRole" class="role-pill"></span><button id="logout" class="clear" type="button">Вийти</button></div>
+</section>
+<section class="search-panel"><div class="field specialty-field"><label for="specialty">Спеціальність / послуга</label><input id="specialty" list="specialties" autocomplete="off" placeholder="Наприклад: невролог, уролог, УЗД…"><datalist id="specialties"></datalist></div><div class="field"><label for="city">Місто</label><select id="city"><option value="">Усі міста</option></select></div><button id="clear" class="clear">Очистити</button><button id="showAdded" class="secondary">Показати додані спеціальності</button></section>
+<div id="addedPanel" class="added-panel" hidden><div class="added-head"><h2>Додані спеціальності</h2><button id="closeAdded" class="clear">Закрити</button></div><p id="addedSummary" class="muted"></p><div id="addedList"></div></div>
+<div class="resultbar" id="resultbar" hidden><div><h2>Результати пошуку</h2><p id="summary"></p></div></div><section id="results" class="results" hidden></section><div id="empty" class="empty" hidden>За цим запитом клінік не знайдено. Спробуйте іншу спеціальність або змініть фільтри.</div><div id="status" class="status-note" role="status"></div>
+<div class="footnote">Додані користувачами спеціальності зберігаються у спільній базі та доступні всім відвідувачам.</div></main><footer>Карта ЛПУ 2.0 · внутрішній інструмент пошуку</footer><script src="app.js"></script></body></html>

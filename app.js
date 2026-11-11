@@ -1,51 +1,31 @@
 const MAP_ID="1K7NXAhGSko0ppMx1Adt0ZRHnEi_jNCM";
-const MAP_BASE=`https://www.google.com/maps/d/u/1/view?mid=${MAP_ID}&usp=sharing`;
-const $=id=>document.getElementById(id);let DB=[],filtered=[];
+const SUPABASE_URL="https://zaoiiafrryeajwoltzvo.supabase.co";
+const SUPABASE_KEY="sb_publishable_ACM7uhhC3PKQxIxvqywgAA_0MuWsE2Y";
+const TABLE="clinic_extra_specialties";
+const $=id=>document.getElementById(id);
+let DB=[],filtered=[],EXTRA=[],SESSION=null,PROFILE=null;
 const norm=s=>String(s||"").toLocaleLowerCase("uk").normalize("NFC").replace(/[’‘`]/g,"'").replace(/\s+/g," ").trim();
 const uniq=a=>[...new Set(a.filter(Boolean))].sort((a,b)=>a.localeCompare(b,"uk"));
 function esc(v){return String(v??"").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));}
-function uniqueLocations(locations=[]){const seen=new Set();return locations.filter(l=>{const k=[norm(l.address),norm(l.city),norm(l.level)].join("|");if(seen.has(k))return false;seen.add(k);return true;});}
-function googleLink(c,l){const q=[c.clinic,l?.address,l?.city].filter(Boolean).join(", ");return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`;}
-function init(){
- const specs=uniq(DB.flatMap(c=>Array.isArray(c.specialties)?c.specialties:[]));
- $("specialties").innerHTML=specs.map(s=>`<option value="${esc(s)}"></option>`).join("");
- const cities=uniq(DB.flatMap(c=>(c.locations||[]).map(l=>l.city)));
- $("city").innerHTML='<option value="">Усі міста</option>'+cities.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join("");
- $("specialty").addEventListener("input",run);
- $("city").addEventListener("change",run);
- $("clear").addEventListener("click",()=>{$("specialty").value="";$("city").value="";run();});
- // Кнопки showMap немає в index.html, тому обробник не потрібен.
- $("results").addEventListener("click",e=>{
-   const btn=e.target.closest("[data-toggle-specialties]");if(!btn)return;
-   const panel=$(btn.getAttribute("aria-controls"));const opening=panel.hidden;
-   panel.hidden=!opening;btn.setAttribute("aria-expanded",String(opening));
-   btn.setAttribute("aria-label",opening?"Сховати спеціальності":"Показати всі спеціальності");
- });
- run();
-}
-function run(){
- const query=norm($("specialty").value),city=$("city").value;
- const started=!!query||!!city;
- $("resultbar").hidden=!started;$("results").hidden=!started;$("empty").hidden=true;
- if(!started){$("results").innerHTML="";$("summary").textContent="Оберіть місто або введіть спеціальність.";return;}
- filtered=DB.map(c=>{
-   const locs=uniqueLocations(c.locations||[]).filter(l=>!city||l.city===city);
-   if(!locs.length)return null;
-   const allSpecs=Array.isArray(c.specialties)?c.specialties:[];
-   const matching=allSpecs.filter(s=>!query||norm(s).includes(query));
-   if(query&&!matching.length)return null;
-   return {...c,matching,shownLocations:locs};
- }).filter(Boolean);
- $("summary").textContent=`Знайдено клінік: ${filtered.length.toLocaleString("uk-UA")}${query?" за спеціальністю":""}${city?` у місті ${city}`:""}`;
- $("results").innerHTML=filtered.map((c,i)=>renderCard(c,i)).join("");
- $("empty").hidden=filtered.length>0;
-}
-function renderCard(c,i){
- const locHtml=c.shownLocations.map(l=>`<div class="loc"><p class="address">${esc(l.address||l.city||"Адресу не вказано")}${l.city?`<small>${esc(l.city)}</small>`:""}</p>${l.level?`<span class="level-badge">Рівень клініки: ${esc(l.level)}</span>`:""}</div>`).join("");
- const allSpecs=uniq(Array.isArray(c.specialties)?c.specialties:[]);
- const panelId=`specialties-${i}`;
- const specsHtml=allSpecs.length?allSpecs.map(s=>`<span class="tag">${esc(s)}</span>`).join(""):'<span class="muted">Спеціальності не вказані.</span>';
- const primary=c.shownLocations[0];const link=googleLink(c,primary);
- return `<article class="card"><h3><button class="clinic-title" type="button" data-toggle-specialties aria-controls="${panelId}" aria-expanded="false">${esc(c.clinic)} <span class="clinic-count">(${allSpecs.length} спеціальностей)</span></button></h3>${locHtml}<div class="clinic-specialties" id="${panelId}" hidden><div class="tags">${specsHtml}</div></div><div class="links"><a class="google" href="${link}" target="_blank" rel="noopener">Показати адресу в Google Maps ↗</a></div></article>`;
-}
-fetch("data.json").then(r=>{if(!r.ok)throw Error("Не вдалося завантажити data.json");return r.json();}).then(d=>{DB=d;init();}).catch(e=>{$("summary").textContent=e.message;console.error(e);});
+function setStatus(msg,error=false){$("status").textContent=msg;$("status").classList.toggle("error",error);}
+function apiHeaders(extra={}){return {apikey:SUPABASE_KEY,Authorization:`Bearer ${SESSION?.access_token||SUPABASE_KEY}`,...extra};}
+async function api(path,options={}){const r=await fetch(`${SUPABASE_URL}${path}`,{...options,headers:apiHeaders(options.headers||{})});const txt=await r.text();if(!r.ok)throw new Error(`${r.status}: ${txt}`);return txt?JSON.parse(txt):null;}
+async function restoreSession(){try{const saved=JSON.parse(localStorage.getItem("lpu2_session")||"null");if(saved?.access_token&&saved?.expires_at>Date.now()/1000){SESSION=saved;await loadProfile();return true;}}catch{}return false;}
+async function anonymousSignIn(){const r=await fetch(`${SUPABASE_URL}/auth/v1/signup`,{method:"POST",headers:{apikey:SUPABASE_KEY,"Content-Type":"application/json"},body:JSON.stringify({})});const t=await r.text();if(!r.ok)throw new Error(`Не вдалося створити сесію: ${t}`);const d=JSON.parse(t);SESSION={...d,expires_at:Math.floor(Date.now()/1000)+(d.expires_in||3600)};localStorage.setItem("lpu2_session",JSON.stringify(SESSION));}
+async function loadProfile(){const rows=await api(`/rest/v1/lpu_user_profiles?select=surname,is_admin&user_id=eq.${encodeURIComponent(SESSION.user.id)}`);PROFILE=rows[0]||null;}
+async function registerUser(surname,password){surname=surname.trim();if(surname.length<2||surname.length>80)throw new Error("Вкажи коректне прізвище (2–80 символів).");if(!SESSION)await anonymousSignIn();if(password){const r=await fetch(`${SUPABASE_URL}/functions/v1/admin-login`,{method:"POST",headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${SESSION.access_token}`,"Content-Type":"application/json"},body:JSON.stringify({surname,password})});const t=await r.text();if(!r.ok)throw new Error(`Вхід адміністратора не виконано: ${t}`);PROFILE=JSON.parse(t).profile;}else{await api(`/rest/v1/lpu_user_profiles`,{method:"POST",headers:{"Content-Type":"application/json",Prefer:"resolution=merge-duplicates,return=representation"},body:JSON.stringify({user_id:SESSION.user.id,surname,is_admin:false})});await loadProfile();}if(!PROFILE)throw new Error("Не вдалося завантажити профіль.");await loadExtra();refreshDatalist();run();renderUser();setStatus(`Вхід виконано: ${PROFILE.surname}${PROFILE.is_admin?" (адміністратор)":""}.`);}
+async function logout(){SESSION=null;PROFILE=null;localStorage.removeItem("lpu2_session");renderUser();setStatus("Ви вийшли. Для додавання спеціальностей увійдіть знову.");}
+function renderUser(){const box=$("userPanel");if(PROFILE){$("authForm").hidden=true;$("userSignedIn").hidden=false;$("userIdentity").textContent=`Ви увійшли як: ${PROFILE.surname}${PROFILE.is_admin?" · Адміністратор":""}`;$("userRole").textContent=PROFILE.is_admin?"Адміністратор":"Користувач";box.classList.toggle("admin-session",!!PROFILE.is_admin);}else{$("authForm").hidden=false;$("userSignedIn").hidden=true;box.classList.remove("admin-session");}}
+async function loadExtra(){EXTRA=await api(`/rest/v1/${TABLE}?select=id,clinic_name,specialty,added_by_surname,is_admin,created_at&order=created_at.desc`);}
+function extrasFor(clinic){return EXTRA.filter(x=>norm(x.clinic_name)===norm(clinic));}
+function allSpecs(c){return uniq([...(Array.isArray(c.specialties)?c.specialties:[]),...extrasFor(c.clinic).map(x=>x.specialty)]);}
+function init(){const specs=uniq(DB.flatMap(c=>allSpecs(c)));$("specialties").innerHTML=specs.map(s=>`<option value="${esc(s)}"></option>`).join("");const cities=uniq(DB.flatMap(c=>(c.locations||[]).map(l=>l.city)));$("city").innerHTML='<option value="">Усі міста</option>'+cities.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join("");$("specialty").addEventListener("input",run);$("city").addEventListener("change",run);$("clear").addEventListener("click",()=>{$("specialty").value="";$("city").value="";run();});$("showAdded").addEventListener("click",showAdded);$("closeAdded").addEventListener("click",()=>$("addedPanel").hidden=true);$("results").addEventListener("click",handleCardClick);$("addedList").addEventListener("click",handleCardClick);$("authForm").addEventListener("submit",async e=>{e.preventDefault();try{await registerUser($("surname").value,$("adminPassword").value);$("adminPassword").value="";}catch(err){setStatus(err.message,true);}});$("logout").addEventListener("click",logout);run();renderUser();}
+function handleCardClick(e){const toggle=e.target.closest("[data-toggle-specialties]");if(toggle){const p=$(toggle.getAttribute("aria-controls"));p.hidden=!p.hidden;toggle.setAttribute("aria-expanded",String(!p.hidden));return;}const add=e.target.closest("[data-add-specialty]");if(add){addSpecialty(add.dataset.clinic,add.dataset.input);return;}const del=e.target.closest("[data-delete-specialty]");if(del){deleteSpecialty(Number(del.dataset.id));}}
+function run(){const query=norm($("specialty").value),city=$("city").value,started=!!query||!!city;$("resultbar").hidden=!started;$("results").hidden=!started;$("empty").hidden=true;if(!started){$("results").innerHTML="";$("summary").textContent="Оберіть місто або введіть спеціальність.";return;}filtered=DB.map(c=>{const locs=(c.locations||[]).filter(l=>!city||l.city===city);if(!locs.length)return null;const matching=allSpecs(c).filter(s=>!query||norm(s).includes(query));if(query&&!matching.length)return null;return {...c,matching,shownLocations:locs};}).filter(Boolean);$("summary").textContent=`Знайдено клінік: ${filtered.length.toLocaleString("uk-UA")}${query?" за спеціальністю":""}${city?` у місті ${city}`:""}`;$("results").innerHTML=filtered.map((c,i)=>renderCard(c,i)).join("");$("empty").hidden=filtered.length>0;}
+function renderCard(c,i){const locHtml=c.shownLocations.map(l=>`<div class="loc"><p class="address">${esc(l.address||l.city||"Адресу не вказано")}${l.city?`<small>${esc(l.city)}</small>`:""}</p>${l.level?`<span class="level-badge">Рівень клініки: ${esc(l.level)}</span>`:""}</div>`).join("");const base=uniq(Array.isArray(c.specialties)?c.specialties:[]),extra=extrasFor(c.clinic),panelId=`specialties-${i}`;const tags=[...base.map(s=>`<span class="tag">${esc(s)}</span>`),...extra.map(x=>`<span class="tag ${x.is_admin?"admin-tag":"user-tag"}" title="Додав: ${esc(x.added_by_surname||"невідомо")}">${esc(x.specialty)} <small>${x.is_admin?"адмін":"додано"} · ${esc(x.added_by_surname||"невідомо")}</small>${PROFILE?.is_admin?` <button class="delete-specialty" type="button" data-delete-specialty data-id="${x.id}" title="Видалити">×</button>`:""}</span>`)].join("")||'<span class="muted">Спеціальності не вказані.</span>';const primary=c.shownLocations[0],link=`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent([c.clinic,primary?.address,primary?.city].filter(Boolean).join(", "))}`;return `<article class="card"><h3><button class="clinic-title" type="button" data-toggle-specialties aria-controls="${panelId}" aria-expanded="false">${esc(c.clinic)} <span class="clinic-count">(${base.length+extra.length} спеціальностей)</span></button></h3>${locHtml}<div class="clinic-specialties" id="${panelId}" hidden><div class="tags">${tags}</div>${PROFILE?`<div class="add-specialty"><input id="new-${i}" maxlength="120" placeholder="Нова спеціальність / послуга"><button type="button" class="add-btn" data-add-specialty data-clinic="${esc(c.clinic)}" data-input="new-${i}">+ Додати спеціальність</button></div>`:`<p class="muted">Щоб додати спеціальність, спочатку увійдіть за прізвищем.</p>`}</div><div class="links"><a class="google" href="${link}" target="_blank" rel="noopener">Показати адресу в Google Maps ↗</a></div></article>`;}
+async function addSpecialty(clinic,inputId){if(!PROFILE||!SESSION){setStatus("Спочатку увійдіть за прізвищем.",true);return;}const input=$(inputId),specialty=input.value.trim();if(!specialty){setStatus("Введи назву спеціальності.",true);return;}if(specialty.length>120){setStatus("Максимальна довжина — 120 символів.",true);return;}if(allSpecs(DB.find(c=>norm(c.clinic)===norm(clinic))||{clinic,specialties:[]}).some(s=>norm(s)===norm(specialty))){setStatus("Така спеціальність уже є в цій клініці.",true);return;}try{const rows=await api(`/rest/v1/${TABLE}`,{method:"POST",headers:{"Content-Type":"application/json",Prefer:"return=representation"},body:JSON.stringify({clinic_name:clinic,specialty,added_by_surname:PROFILE.surname,is_admin:!!PROFILE.is_admin,user_id:SESSION.user.id})});EXTRA.unshift(...rows);input.value="";setStatus(`«${specialty}» додано до ${clinic}. Автор: ${PROFILE.surname}.`);refreshDatalist();run();}catch(e){setStatus(`Не вдалося зберегти: ${e.message}`,true);}}
+async function deleteSpecialty(id){if(!PROFILE?.is_admin)return;if(!confirm("Видалити цю додану спеціальність? Дію не можна скасувати."))return;try{await api(`/rest/v1/${TABLE}?id=eq.${id}`,{method:"DELETE"});EXTRA=EXTRA.filter(x=>x.id!==id);setStatus("Спеціальність видалено.");refreshDatalist();run();if(!$("addedPanel").hidden)showAdded();}catch(e){setStatus(`Не вдалося видалити: ${e.message}`,true);}}
+function refreshDatalist(){const specs=uniq(DB.flatMap(c=>allSpecs(c)));$("specialties").innerHTML=specs.map(s=>`<option value="${esc(s)}"></option>`).join("");}
+function showAdded(){$("addedPanel").hidden=false;const rows=[...EXTRA].sort((a,b)=>a.clinic_name.localeCompare(b.clinic_name,"uk")||a.specialty.localeCompare(b.specialty,"uk"));$("addedSummary").textContent=`Усього додано: ${rows.length}`;$("addedList").innerHTML=rows.length?rows.map(x=>`<div class="added-row"><div><strong>${esc(x.clinic_name)}</strong><div class="muted">${esc(x.specialty)}</div><div class="muted">Додав: ${esc(x.added_by_surname||"невідомо")}</div></div><span class="tag ${x.is_admin?"admin-tag":"user-tag"}">${x.is_admin?"Адміністратор":"Користувач"}${PROFILE?.is_admin?` <button class="delete-specialty" type="button" data-delete-specialty data-id="${x.id}">×</button>`:""}</span></div>`).join(""):'<p class="muted">Поки немає доданих спеціальностей.</p>';}
+async function start(){try{const d=await fetch("data.json").then(r=>{if(!r.ok)throw Error("Не вдалося завантажити data.json");return r.json();});DB=d;const restored=await restoreSession();if(restored){await loadExtra();}else{SESSION=null;PROFILE=null;EXTRA=[];}init();}catch(e){setStatus(`Помилка запуску: ${e.message}`,true);console.error(e);}}
+start();

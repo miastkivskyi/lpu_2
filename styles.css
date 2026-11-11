@@ -23,3 +23,34 @@
 .clinic-title{border:0;background:transparent;padding:0;text-align:left;color:#173e62;font:inherit;font-size:16px;font-weight:750;line-height:1.35;cursor:pointer}
 .clinic-title:hover{text-decoration:underline;text-decoration-color:#8aabc5;text-underline-offset:3px}
 .clinic-count{font-size:11px;font-weight:500;color:#718397;white-space:nowrap}
+
+/* Shared specialties via Supabase */
+.add-specialty{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;padding-top:10px;border-top:1px solid #edf1f5}
+.add-specialty input{flex:1;min-width:180px;height:38px;border:1px solid #cbd7e3;border-radius:8px;padding:0 10px;font-size:13px}
+.add-btn{border:0;border-radius:8px;background:#176ba8;color:#fff;padding:0 13px;min-height:38px;font-weight:650;cursor:pointer}
+.add-btn:disabled{opacity:.55;cursor:wait}
+.user-tag{background:#fff0d8;color:#965500;border:1px solid #f2d19a}
+.admin-tag{background:#e8e3ff;color:#503a9b;border:1px solid #c9bdf5}
+.tag small{font-size:9px;font-weight:700;margin-left:4px}
+.added-panel{background:#fff;border:1px solid #dce5ee;border-radius:13px;padding:16px;margin-top:14px}
+.added-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.added-head h2{font-size:18px;margin:0}
+.added-row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 0;border-top:1px solid #edf1f5}
+.added-row:first-child{margin-top:10px}
+.muted{font-size:12px;color:#8493a2}
+.status-note{font-size:13px;color:#28613c;margin:12px 2px;min-height:0}
+.status-note:empty{display:none}
+.status-note.error{color:#b42318;background:#fff1f0;border-radius:8px;padding:9px}
+@media(max-width:560px){.add-specialty{flex-direction:column}.add-btn{min-height:40px}.added-row{align-items:flex-start;flex-direction:column}}
+
+/* User registration and role UI */
+.user-panel{background:#fff;border:1px solid #dce5ee;border-radius:14px;padding:15px;margin:0 0 16px;box-shadow:0 5px 18px #183b5c0a}
+.auth-form{display:grid;grid-template-columns:1.2fr 1fr 1.4fr auto;gap:12px;align-items:end}
+.auth-form strong{color:#173e62}.auth-form p{margin:5px 0 0}
+.auth-form label{display:block;font-size:12px;font-weight:700;color:#53677d}
+.auth-form input{display:block;width:100%;height:40px;margin-top:6px;border:1px solid #cbd7e3;border-radius:8px;padding:0 10px;font-size:13px}
+.user-signed{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.user-signed strong{color:#173e62}.role-pill{background:#eaf1f7;color:#234968;border-radius:20px;padding:5px 10px;font-size:11px;font-weight:700}.admin-session{border-color:#b8a8ee;background:#fcfbff}
+.delete-specialty{border:0;border-radius:50%;width:18px;height:18px;line-height:16px;margin-left:5px;background:#b42318;color:white;font-weight:800;cursor:pointer;padding:0}
+.added-row .tag{white-space:nowrap}
+@media(max-width:850px){.auth-form{grid-template-columns:1fr 1fr}.auth-form>div{grid-column:1/-1}}
+@media(max-width:560px){.auth-form{grid-template-columns:1fr}.auth-form>div{grid-column:auto}.user-signed{align-items:flex-start;flex-direction:column}}

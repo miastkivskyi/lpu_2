@@ -1,67 +1,300 @@
 <!doctype html>
 <html lang="uk">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
 <title>Рідкісні послуги — Карта ЛПУ 2.0</title>
+
 <link rel="stylesheet" href="styles.css">
 <link rel="stylesheet" href="rare-services.css">
+<link rel="icon" type="image/png" href="/favicon.ico.png">
+
 <style>
-.brand-symbol{display:block;width:48px;height:48px;flex:0 0 48px;filter:drop-shadow(0 4px 7px rgba(22,79,125,.16))}
-.brand{gap:12px;align-items:center}
-.brand h1{letter-spacing:-.025em}
-.user-meta .role-pill{display:none!important}
-.user-meta{justify-content:center}
-.user-meta strong{font-size:14px;font-weight:750;color:inherit}
-@media(max-width:560px){.brand-symbol{width:42px;height:42px;flex-basis:42px}}
+.brand-symbol {
+    display: block;
+    width: 48px;
+    height: 48px;
+    flex: 0 0 48px;
+    filter: drop-shadow(0 4px 7px rgba(22,79,125,.16));
+}
+
+.brand {
+    gap: 12px;
+    align-items: center;
+}
+
+.brand h1 {
+    letter-spacing: -.025em;
+}
+
+.user-meta .role-pill {
+    display: none !important;
+}
+
+.user-meta {
+    justify-content: center;
+}
+
+.user-meta strong {
+    font-size: 14px;
+    font-weight: 750;
+    color: inherit;
+}
+
+@media(max-width:560px) {
+    .brand-symbol {
+        width: 42px;
+        height: 42px;
+        flex-basis: 42px;
+    }
+}
 </style>
 </head>
+
 <body>
+
 <header class="top">
- <div class="brand"><svg class="brand-symbol" viewBox="0 0 64 64" role="img" aria-label="Логотип Карта ЛПУ">
- <defs>
-  <linearGradient id="lpuLogoGrad" x1="8" y1="5" x2="56" y2="60" gradientUnits="userSpaceOnUse">
-   <stop stop-color="#4DA7E8"/><stop offset="1" stop-color="#14558F"/>
-  </linearGradient>
- </defs>
- <rect x="2" y="2" width="60" height="60" rx="19" fill="url(#lpuLogoGrad)"/>
- <path d="M32 10.5c-10.3 0-18.6 8.1-18.6 18.1 0 13.3 18.6 26.1 18.6 26.1s18.6-12.8 18.6-26.1C50.6 18.6 42.3 10.5 32 10.5Z" fill="none" stroke="#fff" stroke-width="2.7"/>
- <path d="M28 19.5h8v7.8h7.8v8H36v7.8h-8v-7.8h-7.8v-8H28z" fill="#fff"/>
- <circle cx="32" cy="29.2" r="2.1" fill="#1A639F"/>
-</svg><div><h1>Карта ЛПУ 2.0</h1><p>Каталог рідкісних спеціалістів та послуг</p></div></div>
- <div class="top-actions"><a class="toplink" href="index.html">← До карти клінік</a><button id="rareLogin" class="login-open-btn">Увійти</button><div id="rareUser" class="user-signed" hidden><div class="user-meta"><strong id="rareSurname"></strong></div><button id="rareLogout" class="logout-btn">Вийти</button></div></div>
+    <div class="brand">
+        <svg class="brand-symbol" viewBox="0 0 64 64" role="img" aria-label="Логотип Карта ЛПУ">
+            <defs>
+                <linearGradient id="lpuLogoGrad" x1="8" y1="5" x2="56" y2="60" gradientUnits="userSpaceOnUse">
+                    <stop stop-color="#4DA7E8"/>
+                    <stop offset="1" stop-color="#14558F"/>
+                </linearGradient>
+            </defs>
+
+            <rect x="2" y="2" width="60" height="60" rx="19" fill="url(#lpuLogoGrad)"/>
+
+            <path d="M32 10.5c-10.3 0-18.6 8.1-18.6 18.1 0 13.3 18.6 26.1 18.6 26.1s18.6-12.8 18.6-26.1C50.6 18.6 42.3 10.5 32 10.5Z"
+                  fill="none" stroke="#fff" stroke-width="2.7"/>
+
+            <path d="M28 19.5h8v7.8h7.8v8H36v7.8h-8v-7.8h-7.8v-8H28z"
+                  fill="#fff"/>
+
+            <circle cx="32" cy="29.2" r="2.1" fill="#1A639F"/>
+        </svg>
+
+        <div>
+            <h1>Карта ЛПУ 2.0</h1>
+            <p>Каталог рідкісних спеціалістів та послуг</p>
+        </div>
+    </div>
+
+    <div class="top-actions">
+        <a class="toplink" href="index.html">← До карти клінік</a>
+
+        <button id="rareLogin" class="login-open-btn">Увійти</button>
+
+        <div id="rareUser" class="user-signed" hidden>
+            <div class="user-meta">
+                <strong id="rareSurname"></strong>
+            </div>
+            <button id="rareLogout" class="logout-btn">Вийти</button>
+        </div>
+    </div>
 </header>
+
 <main class="wrap rare-wrap">
- <section class="rare-hero">
-  <div><span class="eyebrow">ОКРЕМИЙ МОДУЛЬ</span><h2>Рідкісні спеціалісти, послуги та обстеження</h2><p>Єдиний каталог медичних напрямів і місць, де їх можна отримати. Інформація імпортована з робочого Excel-файлу; умови та ціни потрібно перевіряти перед зверненням.</p></div>
-  <div class="rare-hero-icon">✚</div>
- </section>
- <section class="rare-search">
-  <div class="rare-field"><label for="rareQuery">Пошук за назвою, клінікою або приміткою</label><input id="rareQuery" type="search" placeholder="Наприклад: генетик, ЕНМГ, МРТ серця…" autocomplete="off"></div>
-  <div class="rare-field"><label for="rareCity">Місто / регіон</label><input id="rareCity" type="search" placeholder="Усі міста" autocomplete="off"></div>
-  <div class="rare-field"><label for="rareCategory">Категорія</label><select id="rareCategory"><option value="">Усі категорії</option><option>Лікар</option><option>Послуга</option><option>Обстеження</option></select></div>
-  <button id="rareClear" class="clear">Очистити</button>
- </section>
- <div class="rare-toolbar"><div><h2>Каталог</h2><p id="rareSummary">Завантаження даних…</p></div><button id="rareSuggest" class="add-btn">+ Запропонувати запис</button></div>
- <section id="rareAdmin" class="admin-workspace" hidden><div class="admin-workspace-head"><div><span class="eyebrow">АДМІНІСТРУВАННЯ</span><h2>Пропозиції на розгляді</h2></div><span id="rarePendingCount" class="count-pill">0</span></div><div id="rarePending"></div></section>
- <div id="rareStatus" class="status-note" role="status"></div>
- <section id="rareResults" class="rare-results"></section>
- <div id="rareEmpty" class="empty" hidden>За цим запитом нічого не знайдено.</div>
- <p class="rare-disclaimer">Дані перенесені з файлу «Рідкісні лікарі і обстеження.xlsx». Наявність, ціни та умови можуть змінюватися. Запис не підтверджується автоматично — уточнюйте інформацію в закладі.</p>
+
+    <section class="rare-hero">
+        <div>
+            <span class="eyebrow">ОКРЕМИЙ МОДУЛЬ</span>
+            <h2>Рідкісні спеціалісти, послуги та обстеження</h2>
+            <p>
+                Єдиний каталог медичних напрямів і місць, де їх можна отримати.
+                Інформація імпортована з робочого Excel-файлу; умови та ціни
+                потрібно перевіряти перед зверненням.
+            </p>
+        </div>
+
+        <div class="rare-hero-icon">✚</div>
+    </section>
+
+    <section class="rare-search">
+
+        <div class="rare-field">
+            <label for="rareQuery">Пошук за назвою, клінікою або приміткою</label>
+            <input id="rareQuery" type="search"
+                   placeholder="Наприклад: генетик, ЕНМГ, МРТ серця…"
+                   autocomplete="off">
+        </div>
+
+        <div class="rare-field">
+            <label for="rareCity">Місто / регіон</label>
+            <input id="rareCity" type="search"
+                   placeholder="Усі міста"
+                   autocomplete="off">
+        </div>
+
+        <div class="rare-field">
+            <label for="rareCategory">Категорія</label>
+            <select id="rareCategory">
+                <option value="">Усі категорії</option>
+                <option>Лікар</option>
+                <option>Послуга</option>
+                <option>Обстеження</option>
+            </select>
+        </div>
+
+        <button id="rareClear" class="clear">Очистити</button>
+    </section>
+
+    <div class="rare-toolbar">
+        <div>
+            <h2>Каталог</h2>
+            <p id="rareSummary">Завантаження даних…</p>
+        </div>
+
+        <button id="rareSuggest" class="add-btn">+ Запропонувати запис</button>
+    </div>
+
+    <section id="rareAdmin" class="admin-workspace" hidden>
+        <div class="admin-workspace-head">
+            <div>
+                <span class="eyebrow">АДМІНІСТРУВАННЯ</span>
+                <h2>Пропозиції на розгляді</h2>
+            </div>
+
+            <span id="rarePendingCount" class="count-pill">0</span>
+        </div>
+
+        <div id="rarePending"></div>
+    </section>
+
+    <div id="rareStatus" class="status-note" role="status"></div>
+
+    <section id="rareResults" class="rare-results"></section>
+
+    <div id="rareEmpty" class="empty" hidden>
+        За цим запитом нічого не знайдено.
+    </div>
+
+    <p class="rare-disclaimer">
+        Дані перенесені з файлу «Рідкісні лікарі і обстеження.xlsx».
+        Наявність, ціни та умови можуть змінюватися.
+        Запис не підтверджується автоматично — уточнюйте інформацію в закладі.
+    </p>
+
 </main>
+
 <footer>Карта ЛПУ 2.0 · модуль рідкісних послуг</footer>
 
-<div id="rareAuth" class="auth-modal" hidden><div class="auth-backdrop" data-close-auth></div><section class="auth-dialog" role="dialog" aria-modal="true"><button class="auth-close" data-close-auth>×</button><div class="auth-mark">+</div><span class="auth-eyebrow">ВХІД ДО КАРТИ ЛПУ</span><h2>Авторизація</h2><p class="auth-description">Для пропозицій потрібен вхід за прізвищем. Адміністратору також потрібен пароль.</p><form id="rareAuthForm" class="auth-form"><label>Прізвище<input id="rareSurnameInput" required placeholder="Ваше прізвище"></label><label>Пароль адміністратора <span>(лише для адміністратора)</span><input id="rarePassword" type="password" placeholder="Залиште порожнім для звичайного входу"></label><p id="rareAuthError" class="auth-error"></p><button class="add-btn auth-submit">Увійти</button></form></section></div>
+<!-- Авторизація -->
 
-<div id="rareFormModal" class="auth-modal" hidden><div class="auth-backdrop" data-close-form></div><section class="auth-dialog rare-form-dialog" role="dialog" aria-modal="true"><button class="auth-close" data-close-form>×</button><div class="auth-mark">+</div><span class="auth-eyebrow">КАТАЛОГ РІДКІСНИХ ПОСЛУГ</span><h2 id="rareFormTitle">Запропонувати запис</h2><p id="rareFormDescription" class="auth-description">Пропозиція стане видимою всім після перевірки адміністратором.</p><form id="rareRecordForm" class="auth-form">
-<label>Категорія<select id="fCategory" required><option value="Лікар">Лікар</option><option value="Послуга">Послуга</option><option value="Обстеження">Обстеження</option></select></label>
-<label>Назва спеціаліста / послуги<input id="fName" required maxlength="180"></label>
-<label>Місто / регіон<input id="fCity" required maxlength="120"></label>
-<label>Клініка<input id="fClinic" required maxlength="220"></label>
-<label>Адреса<input id="fAddress" maxlength="250"></label>
-<label>Наявність / статус<input id="fAvailability" maxlength="120" placeholder="Наприклад: працює, тимчасово не працює"></label>
-<label>Вартість<input id="fPrice" maxlength="120" placeholder="Як зазначено клінікою"></label>
-<label>Умови та примітки<textarea id="fNotes" rows="3" maxlength="2000"></textarea></label>
-<p id="rareFormError" class="auth-error"></p><button id="rareFormSubmit" type="submit" class="add-btn auth-submit">Надіслати на розгляд</button>
-</form></section></div>
+<div id="rareAuth" class="auth-modal" hidden>
+    <div class="auth-backdrop" data-close-auth></div>
+
+    <section class="auth-dialog" role="dialog" aria-modal="true">
+        <button class="auth-close" data-close-auth>×</button>
+
+        <div class="auth-mark">+</div>
+        <span class="auth-eyebrow">ВХІД ДО КАРТИ ЛПУ</span>
+
+        <h2>Авторизація</h2>
+
+        <p class="auth-description">
+            Для пропозицій потрібен вхід за прізвищем.
+            Адміністратору також потрібен пароль.
+        </p>
+
+        <form id="rareAuthForm" class="auth-form">
+
+            <label>
+                Прізвище
+                <input id="rareSurnameInput" required placeholder="Ваше прізвище">
+            </label>
+
+            <label>
+                Пароль адміністратора
+                <span>(лише для адміністратора)</span>
+                <input id="rarePassword" type="password"
+                       placeholder="Залиште порожнім для звичайного входу">
+            </label>
+
+            <p id="rareAuthError" class="auth-error"></p>
+
+            <button class="add-btn auth-submit">Увійти</button>
+        </form>
+    </section>
+</div>
+
+<!-- Форма пропозиції нового запису -->
+
+<div id="rareFormModal" class="auth-modal" hidden>
+    <div class="auth-backdrop" data-close-form></div>
+
+    <section class="auth-dialog rare-form-dialog" role="dialog" aria-modal="true">
+        <button class="auth-close" data-close-form>×</button>
+
+        <div class="auth-mark">+</div>
+        <span class="auth-eyebrow">КАТАЛОГ РІДКІСНИХ ПОСЛУГ</span>
+
+        <h2 id="rareFormTitle">Запропонувати запис</h2>
+
+        <p id="rareFormDescription" class="auth-description">
+            Пропозиція стане видимою всім після перевірки адміністратором.
+        </p>
+
+        <form id="rareRecordForm" class="auth-form">
+
+            <label>
+                Категорія
+                <select id="fCategory" required>
+                    <option value="Лікар">Лікар</option>
+                    <option value="Послуга">Послуга</option>
+                    <option value="Обстеження">Обстеження</option>
+                </select>
+            </label>
+
+            <label>
+                Назва спеціаліста / послуги
+                <input id="fName" required maxlength="180">
+            </label>
+
+            <label>
+                Місто / регіон
+                <input id="fCity" required maxlength="120">
+            </label>
+
+            <label>
+                Клініка
+                <input id="fClinic" required maxlength="220">
+            </label>
+
+            <label>
+                Адреса
+                <input id="fAddress" maxlength="250">
+            </label>
+
+            <label>
+                Наявність / статус
+                <input id="fAvailability" maxlength="120"
+                       placeholder="Наприклад: працює, тимчасово не працює">
+            </label>
+
+            <label>
+                Вартість
+                <input id="fPrice" maxlength="120"
+                       placeholder="Як зазначено клінікою">
+            </label>
+
+            <label>
+                Умови та примітки
+                <textarea id="fNotes" rows="3" maxlength="2000"></textarea>
+            </label>
+
+            <p id="rareFormError" class="auth-error"></p>
+
+            <button id="rareFormSubmit" type="submit" class="add-btn auth-submit">
+                Надіслати на розгляд
+            </button>
+
+        </form>
+    </section>
+</div>
+
 <script src="rare-services.js"></script>
-</body></html>
+
+</body>
+</html>

@@ -22,6 +22,27 @@ async function anonymousSignIn(){
  sessionStorage.setItem(SESSION_KEY,JSON.stringify(SESSION));
 }
 async function loadProfile(){const rows=await api(`/rest/v1/lpu_user_profiles?select=surname,is_admin&user_id=eq.${encodeURIComponent(SESSION.user.id)}`);PROFILE=rows[0]||null;}
+async function ensureRegularProfile(surname){
+ const userId=SESSION?.user?.id;
+ if(!userId)throw new Error("Не вдалося отримати ID користувача. Спробуй увійти ще раз.");
+ const profilePath=`/rest/v1/lpu_user_profiles?select=surname,is_admin&user_id=eq.${encodeURIComponent(userId)}`;
+ // Перевіряємо профіль перед INSERT. Upsert не використовуємо, бо він вимагає UPDATE-політику RLS.
+ const existing=await api(profilePath);
+ if(existing?.length){PROFILE=existing[0];return;}
+ try{
+  await api("/rest/v1/lpu_user_profiles",{
+   method:"POST",
+   headers:{"Content-Type":"application/json",Prefer:"return=representation"},
+   body:JSON.stringify({user_id:userId,surname,is_admin:false})
+  });
+ }catch(err){
+  // Якщо паралельний запит уже створив профіль, перечитуємо його.
+  if(!/409|23505|duplicate key|already exists/i.test(String(err.message||"")))throw err;
+ }
+ await loadProfile();
+ if(!PROFILE)throw new Error("Профіль не створено або не вдалося його прочитати.");
+}
+
 async function registerUser(surname,password){
  surname=surname.trim();if(surname.length<2||surname.length>80)throw new Error("Вкажи коректне прізвище (2–80 символів).");
  if(!SESSION)await anonymousSignIn();
@@ -29,8 +50,7 @@ async function registerUser(surname,password){
   const r=await fetch(`${SUPABASE_URL}/functions/v1/admin-login`,{method:"POST",headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${SESSION.access_token}`,"Content-Type":"application/json"},body:JSON.stringify({surname,password})});
   const t=await r.text();if(!r.ok)throw new Error(`Вхід адміністратора не виконано: ${t}`);PROFILE=JSON.parse(t).profile;
  }else{
-  await api("/rest/v1/lpu_user_profiles",{method:"POST",headers:{"Content-Type":"application/json",Prefer:"resolution=merge-duplicates,return=representation"},body:JSON.stringify({user_id:SESSION.user.id,surname,is_admin:false})});
-  await loadProfile();
+  await ensureRegularProfile(surname);
  }
  if(!PROFILE)throw new Error("Не вдалося завантажити профіль.");
  sessionStorage.setItem(SESSION_KEY,JSON.stringify(SESSION));await loadExtra();refreshDatalist();run();renderUser();renderAdminWorkspace();closeAuth();
@@ -40,7 +60,12 @@ async function registerUser(surname,password){
 function logout(){sessionStorage.removeItem(SESSION_KEY);SESSION=null;PROFILE=null;window.location.reload();}
 function renderUser(){
  const signed=$("userSignedIn");
- if(PROFILE){signed.hidden=false;$("loginOpen").hidden=true;$("userIdentity").textContent=PROFILE.surname;$("userRole").textContent=PROFILE.is_admin?"Адміністратор":"Користувач";signed.classList.toggle("admin-user",!!PROFILE.is_admin);}
+ if(PROFILE){
+  signed.hidden=false;$("loginOpen").hidden=true;
+  const identity=$("userIdentity");if(identity)identity.textContent=PROFILE.surname;
+  const role=$("userRole");if(role)role.textContent=PROFILE.is_admin?"Адміністратор":"Користувач";
+  signed.classList.toggle("admin-user",!!PROFILE.is_admin);
+ }
  else{signed.hidden=true;$("loginOpen").hidden=false;}
 }
 async function loadExtra(){

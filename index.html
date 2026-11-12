@@ -1,280 +1,75 @@
-
 <!doctype html>
-<html lang="uk">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-
-<title>Карта ЛПУ 2.0 — пошук клінік</title>
-
-<link rel="stylesheet" href="styles.css">
-<link rel="icon" href="/favicon.ico.png" sizes="any">
-
+<html lang="uk"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Карта ЛПУ 2.0 — пошук клінік</title><link rel="stylesheet" href="styles.css">
 <style>
-.brand-symbol {
-    display: block;
-    width: 48px;
-    height: 48px;
-    flex: 0 0 48px;
-    filter: drop-shadow(0 4px 7px rgba(22,79,125,.16));
+/* Помітна кнопка переходу до каталогу рідкісних послуг */
+.top-actions a.toplink[href="rare-services.html"] {
+  color: #ffffff !important;
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: .01em;
+  background: linear-gradient(135deg, #1976c9, #0d5da8);
+  border: 1px solid rgba(255,255,255,.9);
+  border-radius: 11px;
+  padding: 12px 18px;
+  min-height: 46px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, .22);
+  transition: background .18s ease, transform .18s ease, box-shadow .18s ease;
 }
-
-.brand {
-    gap: 12px;
-    align-items: center;
+.top-actions a.toplink[href="rare-services.html"]:hover {
+  color: #ffffff !important;
+  background: linear-gradient(135deg, #258be0, #126fc1);
+  transform: translateY(-1px);
+  box-shadow: 0 5px 16px rgba(0, 0, 0, .28);
 }
-
-.brand h1 {
-    letter-spacing: -.025em;
+.top-actions a.toplink[href="rare-services.html"]:focus-visible {
+  outline: 3px solid #ffffff;
+  outline-offset: 3px;
 }
-
-.user-meta .role-pill {
-    display: none !important;
+@media (max-width: 560px) {
+  .top-actions a.toplink[href="rare-services.html"] {
+    font-size: 16px;
+    padding: 10px 13px;
+    min-height: 42px;
+  }
 }
-
-.user-meta {
-    justify-content: center;
-}
-
-.user-meta strong {
-    font-size: 14px;
-    font-weight: 750;
-    color: inherit;
-}
-
-@media(max-width:560px) {
-    .brand-symbol {
-        width: 42px;
-        height: 42px;
-        flex-basis: 42px;
-    }
-}
+</style><style>
+.brand-symbol{display:block;width:48px;height:48px;flex:0 0 48px;filter:drop-shadow(0 4px 7px rgba(22,79,125,.16))}
+.brand{gap:12px;align-items:center}
+.brand h1{letter-spacing:-.025em}
+.user-meta .role-pill{display:none!important}
+.user-meta{justify-content:center}
+.user-meta strong{font-size:14px;font-weight:750;color:inherit}
+@media(max-width:560px){.brand-symbol{width:42px;height:42px;flex-basis:42px}}
 </style>
 </head>
-
 <body>
-
-<header class="top">
-    <div class="brand">
-        <svg class="brand-symbol" viewBox="0 0 64 64" role="img" aria-label="Логотип Карта ЛПУ">
-            <defs>
-                <linearGradient id="lpuLogoGrad" x1="8" y1="5" x2="56" y2="60" gradientUnits="userSpaceOnUse">
-                    <stop stop-color="#4DA7E8"/>
-                    <stop offset="1" stop-color="#14558F"/>
-                </linearGradient>
-            </defs>
-            <rect x="2" y="2" width="60" height="60" rx="19" fill="url(#lpuLogoGrad)"/>
-            <path d="M32 10.5c-10.3 0-18.6 8.1-18.6 18.1 0 13.3 18.6 26.1 18.6 26.1s18.6-12.8 18.6-26.1C50.6 18.6 42.3 10.5 32 10.5Z" fill="none" stroke="#fff" stroke-width="2.7"/>
-            <path d="M28 19.5h8v7.8h7.8v8H36v7.8h-8v-7.8h-7.8v-8H28z" fill="#fff"/>
-            <circle cx="32" cy="29.2" r="2.1" fill="#1A639F"/>
-        </svg>
-
-        <div>
-            <h1>Карта ЛПУ 2.0</h1>
-            <p>Пошук клінік за містом і спеціальністю</p>
-        </div>
-    </div>
-
-    <div class="top-actions">
-        <a class="toplink" href="rare-services.html">Рідкісні послуги</a>
-
-        <button id="loginOpen" class="login-open-btn" type="button">
-            Увійти
-        </button>
-
-        <div id="userSignedIn" class="user-signed" hidden>
-            <span class="user-avatar">К</span>
-            <div class="user-meta">
-                <strong id="userIdentity"></strong>
-            </div>
-            <button id="logout" class="logout-btn" type="button">Вийти</button>
-        </div>
-
-        <a class="toplink"
-           href="https://www.google.com/maps/d/u/1/view?mid=1K7NXAhGSko0ppMx1Adt0ZRHnEi_jNCM&amp;usp=sharing"
-           target="_blank" rel="noopener">
-            Відкрити карту ↗
-        </a>
-    </div>
-</header>
-
+<header class="top"><div class="brand"><svg class="brand-symbol" viewBox="0 0 64 64" role="img" aria-label="Логотип Карта ЛПУ">
+ <defs>
+  <linearGradient id="lpuLogoGrad" x1="8" y1="5" x2="56" y2="60" gradientUnits="userSpaceOnUse">
+   <stop stop-color="#4DA7E8"/><stop offset="1" stop-color="#14558F"/>
+  </linearGradient>
+ </defs>
+ <rect x="2" y="2" width="60" height="60" rx="19" fill="url(#lpuLogoGrad)"/>
+ <path d="M32 10.5c-10.3 0-18.6 8.1-18.6 18.1 0 13.3 18.6 26.1 18.6 26.1s18.6-12.8 18.6-26.1C50.6 18.6 42.3 10.5 32 10.5Z" fill="none" stroke="#fff" stroke-width="2.7"/>
+ <path d="M28 19.5h8v7.8h7.8v8H36v7.8h-8v-7.8h-7.8v-8H28z" fill="#fff"/>
+ <circle cx="32" cy="29.2" r="2.1" fill="#1A639F"/>
+</svg><div><h1>Карта ЛПУ 2.0</h1><p>Пошук клінік за містом і спеціальністю</p></div></div><div class="top-actions"><a class="toplink" href="rare-services.html">Рідкісні послуги</a>
+<button id="loginOpen" class="login-open-btn" type="button">Увійти</button>
+<div id="userSignedIn" class="user-signed" hidden><span class="user-avatar">К</span><div class="user-meta"><strong id="userIdentity"></strong></div><button id="logout" class="logout-btn" type="button">Вийти</button></div>
+<a class="toplink" href="https://www.google.com/maps/d/u/1/view?mid=1K7NXAhGSko0ppMx1Adt0ZRHnEi_jNCM&amp;usp=sharing" target="_blank" rel="noopener">Відкрити карту ↗</a></div></header>
 <main class="wrap">
-
-<section class="intro intro-with-image">
-    <div class="intro-copy">
-        <span class="eyebrow">Єдина база медичних закладів</span>
-        <h2>Знайдіть клініку за містом або спеціальністю</h2>
-        <p>Оберіть місто, щоб побачити всі клініки та їхні рівні. Додайте спеціальність, щоб залишити лише відповідні заклади. Натисніть на клініку, щоб переглянути спеціальності та додати нові.</p>
-    </div>
-    <img class="intro-illustration" src="medical-map-banner.png" alt="Медична мережа клінік на карті України">
-</section>
-
-<section id="adminWorkspace" class="admin-workspace" hidden>
-    <div class="admin-workspace-head">
-        <div>
-            <span class="eyebrow">Адміністрування</span>
-            <h2>Керування базою</h2>
-        </div>
-        <button id="addClinicOpen" class="add-btn" type="button">+ Додати клініку</button>
-    </div>
-
-    <div class="admin-tabs">
-        <button id="showDeletionRequests" class="secondary" type="button">
-            Заявки на видалення <span id="deletionCount" class="count-pill">0</span>
-        </button>
-        <button id="showCorrectionRequests" class="secondary" type="button">
-            Коригування спеціальностей <span id="correctionCount" class="count-pill">0</span>
-        </button>
-        <button id="showChangeArchive" class="secondary" type="button">
-            Архів змін
-        </button>
-    </div>
-
-    <div id="adminQueue" class="admin-queue" hidden></div>
-
-    <div id="changeArchive" class="change-archive" hidden>
-        <div class="archive-toolbar">
-            <strong>Історія змін бази</strong>
-            <input id="archiveSearch" type="search" placeholder="Пошук за клінікою, спеціальністю або автором…">
-            <select id="archiveType">
-                <option value="">Усі типи змін</option>
-                <option value="lpu_clinics">Клініки</option>
-                <option value="clinic_extra_specialties">Додані спеціальності</option>
-                <option value="specialty_corrections">Коригування спеціальностей</option>
-                <option value="clinic_visibility">Видалення / приховування клінік</option>
-                <option value="clinic_deletion_requests">Заявки на видалення</option>
-            </select>
-        </div>
-        <div id="archiveRows"></div>
-    </div>
-</section>
-
-<section class="map-panel">
-    <div class="panelhead">
-        <h2>Карта ЛПУ 2.0</h2>
-        <a href="https://www.google.com/maps/d/u/1/view?mid=1K7NXAhGSko0ppMx1Adt0ZRHnEi_jNCM&amp;usp=sharing"
-           target="_blank" rel="noopener">
-            Відкрити окремо ↗
-        </a>
-    </div>
-
-    <iframe id="mapFrame"
-        title="Карта ЛПУ 2.0"
-        src="https://www.google.com/maps/d/embed?mid=1K7NXAhGSko0ppMx1Adt0ZRHnEi_jNCM&amp;ehbc=2E312F"
-        loading="lazy"
-        allowfullscreen>
-    </iframe>
-</section>
-
-<section class="search-panel">
-    <div class="field">
-        <label for="specialty">Спеціальність / послуга</label>
-        <input id="specialty" type="search" autocomplete="off" spellcheck="false"
-            placeholder="Почніть вводити спеціальність…"
-            aria-label="Пошук за спеціальністю">
-    </div>
-
-    <div class="field">
-        <label for="city">Місто</label>
-        <input id="city" type="search" autocomplete="off" spellcheck="false"
-            placeholder="Почніть вводити місто…"
-            aria-label="Пошук за містом">
-    </div>
-
-    <button id="clear" class="clear">Очистити</button>
-    <button id="showAdded" class="secondary">Показати додані спеціальності</button>
-</section>
-
-<div id="addedPanel" class="added-panel" hidden>
-    <div class="added-head">
-        <h2>Додані спеціальності</h2>
-        <button id="closeAdded" class="clear">Закрити</button>
-    </div>
-    <p id="addedSummary" class="muted"></p>
-    <div id="addedList"></div>
-</div>
-
-<div class="resultbar" id="resultbar" hidden>
-    <div>
-        <h2>Результати пошуку</h2>
-        <p id="summary"></p>
-    </div>
-</div>
-
-<section id="results" class="results" hidden></section>
-
-<div id="empty" class="empty" hidden>
-    За цим запитом клінік не знайдено. Спробуйте іншу спеціальність або змініть фільтри.
-</div>
-
-<div id="status" class="status-note" role="status"></div>
-
-<div class="footnote">
-    Додані користувачами спеціальності зберігаються у спільній базі та доступні всім відвідувачам.
-</div>
-
-</main>
-
-<footer>Карта ЛПУ 2.0 · внутрішній інструмент пошуку</footer>
-
-<div id="clinicModal" class="auth-modal" hidden>
-    <div class="auth-backdrop" data-close-clinic></div>
-
-    <section class="auth-dialog" role="dialog" aria-modal="true" aria-labelledby="clinicModalTitle">
-        <button class="auth-close" type="button" data-close-clinic aria-label="Закрити">×</button>
-        <div class="auth-mark">+</div>
-        <span class="auth-eyebrow">АДМІНІСТРУВАННЯ</span>
-        <h2 id="clinicModalTitle">Додати клініку</h2>
-        <p class="auth-description">Нова клініка буде збережена у спільній базі Supabase.</p>
-
-        <form id="clinicForm" class="auth-form">
-            <label>Назва клініки
-                <input id="clinicName" required maxlength="200" placeholder="Назва закладу">
-            </label>
-            <label>Місто
-                <input id="clinicCity" required maxlength="120" placeholder="Місто">
-            </label>
-            <label>Адреса
-                <input id="clinicAddress" required maxlength="300" placeholder="Вулиця, будинок">
-            </label>
-            <label>Рівень клініки
-                <input id="clinicLevel" maxlength="40" placeholder="Наприклад: 1">
-            </label>
-            <label>Спеціальності через кому
-                <textarea id="clinicSpecialties" rows="3" placeholder="Терапевт, Кардіолог, УЗД"></textarea>
-            </label>
-            <p id="clinicError" class="auth-error" role="alert"></p>
-            <button class="add-btn auth-submit" type="submit">Зберегти клініку</button>
-        </form>
-    </section>
-</div>
-
-<div id="authModal" class="auth-modal" hidden>
-    <div class="auth-backdrop" data-close-auth></div>
-
-    <section class="auth-dialog" role="dialog" aria-modal="true" aria-labelledby="authTitle">
-        <button class="auth-close" type="button" data-close-auth aria-label="Закрити">×</button>
-        <div class="auth-mark">+</div>
-        <span class="auth-eyebrow">КАРТА ЛПУ 2.0</span>
-        <h2 id="authTitle">Увійти для додавання</h2>
-        <p class="auth-description">Вкажіть прізвище. Пароль потрібен лише адміністратору.</p>
-
-        <form id="authForm" class="auth-form">
-            <label>Прізвище
-                <input id="surname" required minlength="2" maxlength="80"
-                    autocomplete="family-name" placeholder="Ваше прізвище">
-            </label>
-            <label>Пароль адміністратора <span>(необов’язково)</span>
-                <input id="adminPassword" type="password" autocomplete="current-password"
-                    placeholder="Залиште порожнім для звичайного входу">
-            </label>
-            <p id="authError" class="auth-error" role="alert"></p>
-            <button class="add-btn auth-submit" type="submit">Увійти та продовжити</button>
-        </form>
-    </section>
-</div>
-
-<script src="app.js"></script>
-
-</body>
-</html>
+<section class="intro intro-with-image"><div class="intro-copy"><span class="eyebrow">Єдина база медичних закладів</span><h2>Знайдіть клініку за містом або спеціальністю</h2><p>Оберіть місто, щоб побачити всі клініки та їхні рівні. Додайте спеціальність, щоб залишити лише відповідні заклади. Натисніть на клініку, щоб переглянути спеціальності та додати нові.</p></div><img class="intro-illustration" src="medical-map-banner.png" alt="Медична мережа клінік на карті України"></section>
+<section id="adminWorkspace" class="admin-workspace" hidden><div class="admin-workspace-head"><div><span class="eyebrow">Адміністрування</span><h2>Керування базою</h2></div><button id="addClinicOpen" class="add-btn" type="button">+ Додати клініку</button></div><div class="admin-tabs"><button id="showDeletionRequests" class="secondary" type="button">Заявки на видалення <span id="deletionCount" class="count-pill">0</span></button><button id="showCorrectionRequests" class="secondary" type="button">Коригування спеціальностей <span id="correctionCount" class="count-pill">0</span></button><button id="showChangeArchive" class="secondary" type="button">Архів змін</button></div><div id="adminQueue" class="admin-queue" hidden></div><div id="changeArchive" class="change-archive" hidden><div class="archive-toolbar"><strong>Історія змін бази</strong><input id="archiveSearch" type="search" placeholder="Пошук за клінікою, спеціальністю або автором…"><select id="archiveType"><option value="">Усі типи змін</option><option value="lpu_clinics">Клініки</option><option value="clinic_extra_specialties">Додані спеціальності</option><option value="specialty_corrections">Коригування спеціальностей</option><option value="clinic_visibility">Видалення / приховування клінік</option><option value="clinic_deletion_requests">Заявки на видалення</option></select></div><div id="archiveRows"></div></div></section>
+<section class="map-panel"><div class="panelhead"><h2>Карта ЛПУ 2.0</h2><a href="https://www.google.com/maps/d/u/1/view?mid=1K7NXAhGSko0ppMx1Adt0ZRHnEi_jNCM&amp;usp=sharing" target="_blank" rel="noopener">Відкрити окремо ↗</a></div><iframe id="mapFrame" title="Карта ЛПУ 2.0" src="https://www.google.com/maps/d/embed?mid=1K7NXAhGSko0ppMx1Adt0ZRHnEi_jNCM&amp;ehbc=2E312F" loading="lazy" allowfullscreen></iframe></section>
+<section class="search-panel"><div class="field"><label for="specialty">Спеціальність / послуга</label><input id="specialty" type="search" autocomplete="off" spellcheck="false" placeholder="Почніть вводити спеціальність…" aria-label="Пошук за спеціальністю"></div><div class="field"><label for="city">Місто</label><input id="city" type="search" autocomplete="off" spellcheck="false" placeholder="Почніть вводити місто…" aria-label="Пошук за містом"></div><button id="clear" class="clear">Очистити</button><button id="showAdded" class="secondary">Показати додані спеціальності</button></section>
+<div id="addedPanel" class="added-panel" hidden><div class="added-head"><h2>Додані спеціальності</h2><button id="closeAdded" class="clear">Закрити</button></div><p id="addedSummary" class="muted"></p><div id="addedList"></div></div>
+<div class="resultbar" id="resultbar" hidden><div><h2>Результати пошуку</h2><p id="summary"></p></div></div><section id="results" class="results" hidden></section><div id="empty" class="empty" hidden>За цим запитом клінік не знайдено. Спробуйте іншу спеціальність або змініть фільтри.</div><div id="status" class="status-note" role="status"></div><div class="footnote">Додані користувачами спеціальності зберігаються у спільній базі та доступні всім відвідувачам.</div>
+</main><footer>Карта ЛПУ 2.0 · внутрішній інструмент пошуку</footer>
+<div id="clinicModal" class="auth-modal" hidden><div class="auth-backdrop" data-close-clinic></div><section class="auth-dialog" role="dialog" aria-modal="true" aria-labelledby="clinicModalTitle"><button class="auth-close" type="button" data-close-clinic aria-label="Закрити">×</button><div class="auth-mark">+</div><span class="auth-eyebrow">АДМІНІСТРУВАННЯ</span><h2 id="clinicModalTitle">Додати клініку</h2><p class="auth-description">Нова клініка буде збережена у спільній базі Supabase.</p><form id="clinicForm" class="auth-form"><label>Назва клініки<input id="clinicName" required maxlength="200" placeholder="Назва закладу"></label><label>Місто<input id="clinicCity" required maxlength="120" placeholder="Місто"></label><label>Адреса<input id="clinicAddress" required maxlength="300" placeholder="Вулиця, будинок"></label><label>Рівень клініки<input id="clinicLevel" maxlength="40" placeholder="Наприклад: 1"></label><label>Спеціальності через кому<textarea id="clinicSpecialties" rows="3" placeholder="Терапевт, Кардіолог, УЗД"></textarea></label><p id="clinicError" class="auth-error" role="alert"></p><button class="add-btn auth-submit" type="submit">Зберегти клініку</button></form></section></div>
+<div id="authModal" class="auth-modal" hidden><div class="auth-backdrop" data-close-auth></div><section class="auth-dialog" role="dialog" aria-modal="true" aria-labelledby="authTitle"><button class="auth-close" type="button" data-close-auth aria-label="Закрити">×</button><div class="auth-mark">+</div><span class="auth-eyebrow">КАРТА ЛПУ 2.0</span><h2 id="authTitle">Увійти для додавання</h2><p class="auth-description">Вкажіть прізвище. Пароль потрібен лише адміністратору.</p>
+<form id="authForm" class="auth-form"><label>Прізвище<input id="surname" required minlength="2" maxlength="80" autocomplete="family-name" placeholder="Ваше прізвище"></label><label>Пароль адміністратора <span>(необов’язково)</span><input id="adminPassword" type="password" autocomplete="current-password" placeholder="Залиште порожнім для звичайного входу"></label><p id="authError" class="auth-error" role="alert"></p><button class="add-btn auth-submit" type="submit">Увійти та продовжити</button></form></section></div>
+<script src="app.js"></script></body></html>

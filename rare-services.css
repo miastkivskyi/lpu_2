@@ -1,0 +1,49 @@
+body{background:#f3f6fa}
+.rare-wrap{max-width:1180px}
+.rare-hero{display:flex;justify-content:space-between;align-items:center;gap:20px;padding:20px 0 24px}
+.rare-hero h2{font-size:29px;color:#163b5d;margin:8px 0}
+.rare-hero p{max-width:780px;color:#617286;line-height:1.55;margin:0}
+.rare-hero-icon{width:108px;height:108px;flex:0 0 108px;border-radius:26px;background:linear-gradient(145deg,#e5f2fc,#cfe4f5);display:grid;place-items:center;color:#176ba8;font-size:62px;box-shadow:inset 0 0 0 1px #c2d9ec}
+.rare-search{display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:12px;align-items:end;background:#fff;border:1px solid #dce5ee;border-radius:15px;padding:16px;box-shadow:0 5px 18px #183b5c0a}
+.rare-field{min-width:0}.rare-field label{display:block;font-size:12px;font-weight:700;color:#53677d;margin-bottom:7px}
+.rare-field input,.rare-field select{height:43px;width:100%;min-width:0;border:1px solid #cbd7e3;border-radius:9px;padding:0 12px;background:#fff;color:#172b43;font-size:14px}
+.rare-toolbar{display:flex;align-items:center;justify-content:space-between;gap:15px;margin:25px 2px 12px}
+.rare-toolbar h2{margin:0 0 4px;font-size:20px}.rare-toolbar p{margin:0;color:#718195;font-size:13px}
+.rare-results{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
+.rare-card{background:#fff;border:1px solid #dce5ee;border-radius:13px;padding:16px;min-width:0}
+.rare-card h3{font-size:16px;color:#173e62;margin:0 0 9px;overflow-wrap:anywhere}
+.rare-card-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.rare-kind{font-size:10px;font-weight:800;color:#176ba8;background:#eaf3fb;padding:5px 8px;border-radius:6px;white-space:nowrap}
+.rare-clinic{font-size:14px;font-weight:700;color:#304b65;margin:8px 0}
+.rare-detail{font-size:12px;color:#53677d;line-height:1.5;margin:5px 0;overflow-wrap:anywhere}
+.rare-detail b{color:#344f68}.rare-source{font-size:10px;color:#8b99a7;border-top:1px solid #edf1f5;padding-top:9px;margin-top:10px}
+.rare-status{font-size:10px;font-weight:800;padding:4px 7px;border-radius:6px;background:#e8f5ec;color:#17623a}
+.rare-status.uncertain{background:#fff3dc;color:#8a5a00}.rare-status.unavailable{background:#fff0ef;color:#a52b24}
+.rare-admin-row{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;border-top:1px solid #e8eef4;padding:12px 0}
+.rare-admin-row:first-child{margin-top:8px}
+.rare-admin-actions{display:flex;gap:7px;flex-wrap:wrap}
+.rare-admin-actions button{border:0;border-radius:8px;padding:8px 10px;font-size:12px;font-weight:700;cursor:pointer}
+.rare-approve{background:#e4f5eb;color:#17623a}.rare-reject{background:#fff0ef;color:#a52b24}
+.rare-disclaimer{font-size:11px;color:#8291a0;line-height:1.5;margin:20px 2px}
+.rare-form-dialog{max-height:90vh;overflow:auto}
+.rare-form-dialog .auth-form{grid-template-columns:1fr 1fr;gap:12px}
+.rare-form-dialog .auth-form label:nth-last-of-type(1),.rare-form-dialog .auth-error,.rare-form-dialog .auth-submit{grid-column:1/-1}
+.rare-form-dialog textarea{width:100%;margin-top:7px;border:1px solid #cbd7e3;border-radius:10px;padding:10px;color:#172b43;font:inherit;resize:vertical}
+@media(max-width:850px){.rare-search{grid-template-columns:1fr 1fr}.rare-results{grid-template-columns:1fr}}
+@media(max-width:560px){.rare-hero{align-items:flex-start}.rare-hero h2{font-size:23px}.rare-hero-icon{width:68px;height:68px;flex-basis:68px;border-radius:18px;font-size:38px}.rare-search{grid-template-columns:1fr}.rare-toolbar{align-items:flex-start;flex-direction:column}.rare-form-dialog .auth-form{grid-template-columns:1fr}.rare-form-dialog .auth-form label,.rare-form-dialog .auth-error,.rare-form-dialog .auth-submit{grid-column:1}}
+
+/* Адмін-модерація: редагування та видалення пропозицій */
+.rare-admin-row{align-items:flex-start;gap:16px}
+.rare-admin-info{flex:1;min-width:0}
+.rare-admin-title{font-weight:800;color:#173e62;margin-bottom:5px;overflow-wrap:anywhere}
+.rare-admin-actions{justify-content:flex-end;max-width:340px}
+.rare-admin-actions button{transition:filter .15s ease,transform .15s ease}
+.rare-admin-actions button:hover{filter:brightness(.96);transform:translateY(-1px)}
+.rare-admin-actions .rare-edit{background:#eaf3fb;color:#176ba8}
+.rare-admin-actions .rare-delete{background:#fff0ef;color:#a52b24}
+@media(max-width:720px){.rare-admin-row{flex-direction:column}.rare-admin-actions{max-width:none;justify-content:flex-start}}
+
+/* Адміністратор: видалення вже опублікованих записів каталогу */
+.rare-card-admin-actions{display:flex;justify-content:flex-end;margin-top:12px;padding-top:10px;border-top:1px solid #edf1f5}
+.rare-card-admin-actions .rare-delete{border:0;border-radius:8px;padding:8px 11px;background:#fff0ef;color:#a52b24;font-size:12px;font-weight:750;cursor:pointer}
+.rare-card-admin-actions .rare-delete:hover{filter:brightness(.96)}

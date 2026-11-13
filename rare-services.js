@@ -45,13 +45,89 @@ function closeForm(){
  if($("rareFormSubmit"))$("rareFormSubmit").textContent="Надіслати на розгляд";
 }
 async function load(){
- $("rareResults").innerHTML='<div class="empty">Завантаження каталогу…</div>';
+ // Не завантажуємо весь затверджений каталог під час відкриття сторінки.
+ ROWS=[];
+ renderEmptySearchState();
  try{
-  ROWS=await api("/rest/v1/rare_service_records?select=*&status=eq.approved&order=city.asc,name.asc&limit=3000")||[];
-  if(PROFILE?.is_admin)PENDING=await api("/rest/v1/rare_service_records?select=*&status=eq.pending&order=created_at.asc")||[];
-  else PENDING=[];
-  renderAdmin();render();
- }catch(e){$("rareResults").innerHTML="";status("Не вдалося завантажити каталог. Перевір, чи виконана SQL-міграція та імпорт CSV. "+e.message,true);}
+  if(PROFILE?.is_admin){
+   PENDING=await api("/rest/v1/rare_service_records?select=*&status=eq.pending&order=created_at.asc&limit=1000")||[];
+  }else{
+   PENDING=[];
+  }
+  renderAdmin();
+  if(hasSearchCriteria())await searchRecords();
+ }catch(e){
+  status("Не вдалося завантажити дані: "+e.message,true);
+ }
+}
+let searchTimer=null;
+let searchRequestId=0;
+const SEARCH_MIN_CHARS=2;
+const SEARCH_LIMIT=100;
+function currentSearch(){
+ return {q:norm($("rareQuery").value),city:norm($("rareCity").value),cat:$("rareCategory").value};
+}
+function hasSearchCriteria(){
+ const {q,city,cat}=currentSearch();
+ return q.length>=SEARCH_MIN_CHARS||city.length>=SEARCH_MIN_CHARS||!!cat;
+}
+function renderEmptySearchState(message="Введіть щонайменше 2 символи для пошуку або виберіть категорію."){
+ $("rareSummary").textContent="Пошук ще не виконано";
+ $("rareResults").innerHTML="";
+ $("rareEmpty").hidden=false;
+ $("rareEmpty").textContent=message;
+}
+function scheduleSearch(){
+ clearTimeout(searchTimer);
+ const {q,city,cat}=currentSearch();
+ if(q.length<SEARCH_MIN_CHARS&&city.length<SEARCH_MIN_CHARS&&!cat){
+  searchRequestId++;
+  ROWS=[];
+  renderEmptySearchState(q.length===1||city.length===1?"Введіть ще хоча б один символ для пошуку.":undefined);
+  return;
+ }
+ $("rareSummary").textContent="Пошук…";
+ $("rareEmpty").hidden=true;
+ searchTimer=setTimeout(searchRecords,400);
+}
+async function searchRecords(){
+ const {q,city,cat}=currentSearch();
+ if(q.length<SEARCH_MIN_CHARS&&city.length<SEARCH_MIN_CHARS&&!cat){
+  ROWS=[];renderEmptySearchState();return;
+ }
+ const requestId=++searchRequestId;
+ const params=new URLSearchParams({select:"*",status:"eq.approved",order:"city.asc,name.asc",limit:String(SEARCH_LIMIT)});
+ if(q.length>=SEARCH_MIN_CHARS){
+  const term=q.replace(/[(),.*%]/g," ").replace(/\s+/g," ").trim();
+  if(term.length>=SEARCH_MIN_CHARS){
+   const pattern=`*${term}*`;
+   const fields=["name","clinic","city","area","address","price","availability","conditions","notes"];
+   params.set("or",`(${fields.map(field=>`${field}.ilike.${pattern}`).join(",")})`);
+  }
+ }
+ if(city.length>=SEARCH_MIN_CHARS){
+  const cityTerm=city.replace(/[(),.*%]/g," ").replace(/\s+/g," ").trim();
+  if(cityTerm.length>=SEARCH_MIN_CHARS)params.set("city",`ilike.*${cityTerm}*`);
+ }
+ if(cat)params.set("category",`eq.${cat}`);
+ $("rareResults").innerHTML='<div class="empty">Шукаємо записи…</div>';
+ $("rareEmpty").hidden=true;
+ try{
+  const found=await api(`/rest/v1/rare_service_records?${params.toString()}`)||[];
+  if(requestId!==searchRequestId)return;
+  ROWS=found;
+  render();
+  if(found.length===SEARCH_LIMIT){
+   $("rareSummary").textContent=`Показано перші ${SEARCH_LIMIT} записів. Уточніть пошук, щоб звузити результати.`;
+  }
+ }catch(err){
+  if(requestId!==searchRequestId)return;
+  ROWS=[];
+  $("rareResults").innerHTML="";
+  $("rareEmpty").hidden=false;
+  $("rareEmpty").textContent="Не вдалося виконати пошук. Спробуйте ще раз.";
+  status("Помилка пошуку: "+err.message,true);
+ }
 }
 function renderAdmin(){
  $("rareAdmin").hidden=!PROFILE?.is_admin;
@@ -76,16 +152,20 @@ function renderAdmin(){
  </div>`).join(""):'<p class="muted">Нових пропозицій немає.</p>';
 }
 function render(){
- const q=norm($("rareQuery").value),city=norm($("rareCity").value),cat=$("rareCategory").value;
- const filtered=ROWS.filter(x=>(!cat||x.category===cat)&&(!city||norm(x.city).includes(city))&&(!q||norm([x.name,x.clinic,x.city,x.area,x.address,x.price,x.availability,x.conditions,x.notes].join(" ")).includes(q)));
- $("rareSummary").textContent=`Знайдено записів: ${filtered.length} із ${ROWS.length}`;
+ const filtered=ROWS;
+ $("rareSummary").textContent=`Знайдено записів: ${filtered.length}`;
  $("rareEmpty").hidden=!!filtered.length;
- $("rareResults").innerHTML=filtered.slice(0,600).map(x=>{
+ if(!filtered.length){
+  $("rareResults").innerHTML="";
+  $("rareEmpty").textContent="За цим запитом нічого не знайдено.";
+  return;
+ }
+ $("rareResults").innerHTML=filtered.map(x=>{
   const av=norm(x.availability+" "+x.notes);
   const unavailable=/не працює|не проводять|немає|не має|припинили співпрацю|тимчасово не/.test(av);
   const uncertain=/уточн|потрібно|запис|індивідуальн/.test(av);
   const badge=x.availability?`<span class="rare-status ${unavailable?"unavailable":uncertain?"uncertain":""}">${esc(x.availability)}</span>`:"";
-  return `<article class="rare-card"><div class="rare-card-top"><span class="rare-kind">${esc(x.category)}</span>${badge}</div><h3>${esc(x.name)}</h3><div class="rare-clinic">${esc(x.clinic)}</div>${x.city?`<p class="rare-detail"><b>Місто / регіон:</b> ${esc(x.city)}${x.area?" · "+esc(x.area):""}</p>`:""}${x.address?`<p class="rare-detail"><b>Адреса:</b> ${esc(x.address)}</p>`:""}${x.price?`<p class="rare-detail"><b>Вартість:</b> ${esc(x.price)}</p>`:""}${x.availability?`<p class="rare-detail"><b>Наявність:</b> ${esc(x.availability)}</p>`:""}${x.conditions?`<p class="rare-detail"><b>Умови:</b> ${esc(x.conditions)}</p>`:""}${x.notes?`<p class="rare-detail"><b>Примітки:</b> ${esc(x.notes)}</p>`:""}<div class="rare-source">Джерело: ${esc(x.source_sheet||"Додано на сайт")} · ${x.source_row?"рядок "+x.source_row:""} ${x.updated_at?"· оновлено "+new Date(x.updated_at).toLocaleDateString("uk-UA"):""}</div>${PROFILE?.is_admin?`<div class="rare-card-admin-actions"><button type="button" class="rare-delete" data-delete-approved="${esc(x.id)}">Видалити з каталогу</button></div>`:""}</article>`;
+  return `<article class="rare-card"><div class="rare-card-top"><span class="rare-kind">${esc(x.category)}</span>${badge}</div><h3>${esc(x.name)}</h3><div class="rare-clinic">${esc(x.clinic)}</div>${x.city?`<p class="rare-detail"><b>Місто / регіон:</b> ${esc(x.city)}${x.area?" · "+esc(x.area):""}</p>`:""}${x.address?`<p class="rare-detail"><b>Адреса:</b> ${esc(x.address)}</p>`:""}${x.price?`<p class="rare-detail"><b>Вартість:</b> ${esc(x.price)}</p>`:""}${x.availability?`<p class="rare-detail"><b>Наявність:</b> ${esc(x.availability)}</p>`:""}${x.conditions?`<p class="rare-detail"><b>Умови:</b> ${esc(x.conditions)}</p>`:""}${x.notes?`<p class="rare-detail"><b>Примітки:</b> ${esc(x.notes)}</p>`:""}<div class="rare-source">Джерело: ${esc(x.source_sheet||"Додано на сайт")} · ${x.source_row?"рядок "+x.source_row:""} ${x.updated_at?"· оновлено "+new Date(x.updated_at).toLocaleDateString("uk-UA"):""}</div></article>`;
  }).join("");
 }
 async function submitRecord(e){
@@ -211,8 +291,8 @@ document.addEventListener("DOMContentLoaded",async()=>{
  await restore();renderUser();
  $("rareLogin").addEventListener("click",openAuth);
  $("rareLogout").addEventListener("click",()=>{sessionStorage.removeItem(SESSION_KEY);location.reload();});
- $("rareQuery").addEventListener("input",render);$("rareCity").addEventListener("input",render);$("rareCategory").addEventListener("change",render);
- $("rareClear").addEventListener("click",()=>{$("rareQuery").value="";$("rareCity").value="";$("rareCategory").value="";render();});
+ $("rareQuery").addEventListener("input",scheduleSearch);$("rareCity").addEventListener("input",scheduleSearch);$("rareCategory").addEventListener("change",scheduleSearch);
+ $("rareClear").addEventListener("click",()=>{clearTimeout(searchTimer);searchRequestId++;$("rareQuery").value="";$("rareCity").value="";$("rareCategory").value="";ROWS=[];renderEmptySearchState();});
  $("rareSuggest").addEventListener("click",()=>{if(!PROFILE){openAuth();return;}$("rareFormError").textContent="";$("rareRecordForm").reset();$("rareFormModal").hidden=false;document.body.classList.add("modal-open");});
  $("rareAuthForm").addEventListener("submit",async e=>{e.preventDefault();const b=$("rareAuthForm").querySelector("button");b.disabled=true;$("rareAuthError").textContent="";try{await login($("rareSurnameInput").value,$("rarePassword").value);}catch(err){$("rareAuthError").textContent=err.message;}finally{b.disabled=false;}});
  $("rareRecordForm").addEventListener("submit",submitRecord);

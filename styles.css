@@ -11,7 +11,7 @@ body{margin:0}.top{background:#123b63;color:#fff;padding:18px max(22px,calc((100
 .map-panel{padding:16px;margin-bottom:18px}.panelhead{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:12px}
 .panelhead h2{font-size:17px;margin:0 0 4px}.panelhead a{font-size:13px;color:#176ba8;text-decoration:none}
 .map-panel iframe{width:100%;height:430px;border:0;border-radius:10px;background:#e9eef3}
-.search-panel{padding:17px;display:grid;grid-template-columns:2fr 1fr auto auto;gap:13px;align-items:end;position:sticky;top:0;z-index:3}
+.search-panel{padding:17px;display:grid;grid-template-columns:2fr 1fr 1.5fr auto auto;gap:13px;align-items:end;position:sticky;top:0;z-index:3}
 .field label{display:block;font-size:12px;font-weight:700;color:#53677d;margin:0 0 7px}
 .field input,.field select{width:100%;height:43px;border:1px solid #cbd7e3;border-radius:9px;padding:0 12px;font-size:14px;background:#fff;color:#1d344c;outline:none}
 .field input:focus,.field select:focus,.auth-form input:focus{border-color:#2a7db7;box-shadow:0 0 0 3px #2a7db71a}
@@ -255,3 +255,13 @@ body.modal-open{overflow:hidden}
     width:100%;
   }
 }
+
+
+/* Пошук за назвою клініки та окрема кнопка списку спеціалістів */
+.clinic-head-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.specialists-toggle{border:0;border-radius:8px;padding:8px 13px;background:#eaf1f7;color:#234968;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap}
+.specialists-toggle:hover{background:#dce9f4}
+.specialists-toggle[aria-expanded="true"]{background:#176ba8;color:#fff}
+.clinic-card-head h3{flex:1 1 auto;min-width:0;overflow-wrap:anywhere}
+@media(max-width:850px){.search-panel{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){.search-panel{grid-template-columns:1fr}.clinic-card-head{align-items:flex-start;flex-direction:row}.clinic-head-actions{width:100%;justify-content:flex-start}}

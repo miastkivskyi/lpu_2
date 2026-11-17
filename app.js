@@ -1,9 +1,9 @@
 const SUPABASE_URL="https://zaoiiafrryeajwoltzvo.supabase.co";
 const SUPABASE_KEY="sb_publishable_ACM7uhhC3PKQxIxvqywgAA_0MuWsE2Y";
 const TABLE="clinic_extra_specialties", SESSION_KEY="lpu2_session";
-const CLINICS_TABLE="lpu_clinics", VISIBILITY_TABLE="clinic_visibility", DELETE_REQUESTS_TABLE="clinic_deletion_requests", CORRECTIONS_TABLE="specialty_corrections";
+const CLINICS_TABLE="lpu_clinics", VISIBILITY_TABLE="clinic_visibility", DELETE_REQUESTS_TABLE="clinic_deletion_requests", CORRECTIONS_TABLE="specialty_corrections", SPECIALTY_VISIBILITY_TABLE="clinic_specialty_visibility";
 const $=id=>document.getElementById(id);
-let DB=[],filtered=[],EXTRA=[],ADDED_CLINICS=[],HIDDEN_CLINICS=[],DELETE_REQUESTS=[],CORRECTIONS=[],CHANGE_LOG=[],SESSION=null,PROFILE=null,pendingAdd=null,pendingCorrection=null;
+let DB=[],filtered=[],EXTRA=[],ADDED_CLINICS=[],HIDDEN_CLINICS=[],HIDDEN_SPECIALTIES=[],DELETE_REQUESTS=[],CORRECTIONS=[],CHANGE_LOG=[],SESSION=null,PROFILE=null,pendingAdd=null,pendingCorrection=null;
 const norm=s=>String(s||"").toLocaleLowerCase("uk").normalize("NFC").replace(/[’‘`]/g,"'").replace(/\s+/g," ").trim();
 const uniq=a=>[...new Set(a.filter(Boolean))].sort((a,b)=>a.localeCompare(b,"uk"));
 function esc(v){return String(v??"").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));}
@@ -70,12 +70,13 @@ function renderUser(){
  else{signed.hidden=true;$("loginOpen").hidden=false;}
 }
 async function loadExtra(){
- const [extra,added,hidden]=await Promise.all([
+ const [extra,added,hidden,hiddenSpecs]=await Promise.all([
   api(`/rest/v1/${TABLE}?select=id,clinic_name,specialty,added_by_surname,is_admin,created_at&order=created_at.desc`),
   api(`/rest/v1/${CLINICS_TABLE}?select=id,clinic,locations,specialties,added_by_surname,created_at&order=created_at.desc`),
-  api(`/rest/v1/${VISIBILITY_TABLE}?select=clinic_name,is_hidden`)
+  api(`/rest/v1/${VISIBILITY_TABLE}?select=clinic_name,is_hidden`),
+  api(`/rest/v1/${SPECIALTY_VISIBILITY_TABLE}?select=clinic_name,specialty,is_hidden`).catch(err=>{console.warn("Таблиця прихованих спеціальностей ще не налаштована:",err);return [];})
  ]);
- EXTRA=extra||[];ADDED_CLINICS=added||[];HIDDEN_CLINICS=(hidden||[]).filter(x=>x.is_hidden).map(x=>norm(x.clinic_name));
+ EXTRA=extra||[];ADDED_CLINICS=added||[];HIDDEN_CLINICS=(hidden||[]).filter(x=>x.is_hidden).map(x=>norm(x.clinic_name));HIDDEN_SPECIALTIES=(hiddenSpecs||[]).filter(x=>x.is_hidden);
  if(PROFILE?.is_admin){
   const [requests,corrections,history]=await Promise.all([
    api(`/rest/v1/${DELETE_REQUESTS_TABLE}?select=*&status=eq.pending&order=created_at.asc`),
@@ -272,6 +273,7 @@ function handleCardClick(e){
  if(toggle){const panel=$(toggle.getAttribute("aria-controls"));panel.hidden=!panel.hidden;toggle.setAttribute("aria-expanded",String(!panel.hidden));return;}
  const add=e.target.closest("[data-add-specialty]");
  if(add){const clinic=add.dataset.clinic,inputId=add.dataset.input;if(!PROFILE||!SESSION){openAuth(clinic,inputId);return;}addSpecialty(clinic,inputId);return;}
+ const delBase=e.target.closest("[data-delete-base-specialty]");if(delBase){deleteBaseSpecialty(delBase.dataset.clinic,delBase.dataset.specialty);return;}
  const del=e.target.closest("[data-delete-specialty]");if(del){deleteSpecialty(Number(del.dataset.id));return;}
  const adminDel=e.target.closest("[data-admin-delete-clinic]");if(adminDel){const c=allClinics().find(x=>x.clinic===adminDel.dataset.adminDeleteClinic);if(c)deleteClinic(c);return;}
  const correction=e.target.closest("[data-propose-correction]");if(correction){proposeCorrection(correction.dataset.clinic,correction.dataset.originalSpecialty);return;}
@@ -299,7 +301,8 @@ function effectiveSpecialty(clinic,specialty){
  const correction=CORRECTIONS.find(x=>x.status==="approved"&&norm(x.clinic_name)===norm(clinic)&&norm(x.original_specialty)===norm(specialty));
  return correction?.corrected_specialty?.trim()||specialty;
 }
-function allSpecs(c){return uniq([...(Array.isArray(c.specialties)?c.specialties:[]).map(s=>effectiveSpecialty(c.clinic,s)),...extrasFor(c.clinic).map(x=>x.specialty)]);}
+function isSpecialtyHidden(clinic,specialty){return HIDDEN_SPECIALTIES.some(x=>norm(x.clinic_name)===norm(clinic)&&norm(x.specialty)===norm(specialty)&&x.is_hidden);}
+function allSpecs(c){return uniq([...(Array.isArray(c.specialties)?c.specialties:[]).filter(s=>!isSpecialtyHidden(c.clinic,s)).map(s=>effectiveSpecialty(c.clinic,s)),...extrasFor(c.clinic).map(x=>x.specialty)]);}
 function renderCard(c,i){
  // Прибираємо повтори адрес у межах однієї клініки.
  const uniqueLocations=[...new Map(c.shownLocations.map(l=>{
@@ -307,9 +310,9 @@ function renderCard(c,i){
   return [key,l];
  })).values()];
  const locHtml=uniqueLocations.map(l=>`<div class="loc"><p class="address">${esc(l.address||l.city||"Адресу не вказано")}${l.city?`<small>${esc(l.city)}</small>`:""}</p>${l.level?`<span class="level-badge">Рівень клініки: ${esc(l.level)}</span>`:""}</div>`).join("");
- const base=uniq(Array.isArray(c.specialties)?c.specialties:[]),extra=extrasFor(c.clinic),panelId=`specialties-${i}`;
+ const base=uniq(Array.isArray(c.specialties)?c.specialties:[]).filter(s=>!isSpecialtyHidden(c.clinic,s)),extra=extrasFor(c.clinic),panelId=`specialties-${i}`;
  const correctedFor=s=>CORRECTIONS.find(x=>norm(x.clinic_name)===norm(c.clinic)&&norm(x.original_specialty)===norm(s)&&x.status==="approved");
- const tags=base.map(s=>{const corr=correctedFor(s);return `<div class="specialty-row"><div class="specialty-original">${esc(s)}</div><div class="specialty-corrected">${corr?`<span class="corrected-tag">${esc(corr.corrected_specialty)}</span>`:'<span class="muted">—</span>'}</div><button type="button" class="text-action" data-propose-correction data-clinic="${esc(c.clinic)}" data-original-specialty="${esc(s)}">Запропонувати виправлення</button></div>`;}).join("");
+ const tags=base.map(s=>{const corr=correctedFor(s);return `<div class="specialty-row"><div class="specialty-original">${esc(s)}</div><div class="specialty-corrected">${corr?`<span class="corrected-tag">${esc(corr.corrected_specialty)}</span>`:'<span class="muted">—</span>'}</div><div class="specialty-actions"><button type="button" class="text-action" data-propose-correction data-clinic="${esc(c.clinic)}" data-original-specialty="${esc(s)}">Запропонувати виправлення</button>${PROFILE?.is_admin?`<button type="button" class="delete-base-specialty" data-delete-base-specialty data-clinic="${esc(c.clinic)}" data-specialty="${esc(s)}">Видалити</button>`:""}</div></div>`;}).join("");
  const primary=c.shownLocations[0],link=`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent([c.clinic,primary?.address,primary?.city].filter(Boolean).join(", "))}`;
  return `<article class="card"><div class="clinic-card-head"><h3>${esc(c.clinic)} <span class="clinic-count">(${base.length+extra.length} спеціальностей)</span></h3><div class="clinic-head-actions"><button class="specialists-toggle" type="button" data-toggle-specialties data-clinic="${esc(c.clinic)}" aria-controls="${panelId}" aria-expanded="false">Спеціалісти</button>${PROFILE?.is_admin?`<button class="clinic-delete-admin" type="button" data-admin-delete-clinic="${esc(c.clinic)}">Видалити</button>`:""}</div></div>${locHtml}<div class="clinic-specialties" id="${panelId}" hidden><div class="specialty-table"><div class="specialty-table-head"><strong>Спеціальність</strong><strong>Скорегована спеціальність</strong><span></span></div>${tags}</div><div class="tags extra-tags">${extra.length?extra.map(x=>`<span class="tag ${x.is_admin?"admin-tag":"user-tag"}" title="Додав: ${esc(x.added_by_surname||"невідомо")}">${esc(x.specialty)} <small>${x.is_admin?"адмін":"додано"} · ${esc(x.added_by_surname||"невідомо")}</small>${PROFILE?.is_admin?` <button class="delete-specialty" type="button" data-delete-specialty data-id="${x.id}" title="Видалити">×</button>`:""}</span>`).join(""):'<span class="muted">Доданих спеціальностей поки немає.</span>'}</div><div class="add-specialty"><input id="new-${i}" maxlength="120" placeholder="Нова спеціальність / послуга"><button type="button" class="add-btn" data-add-specialty data-clinic="${esc(c.clinic)}" data-input="new-${i}">+ Додати спеціальність</button></div></div><div class="links"><a class="google" href="${link}" target="_blank" rel="noopener">Показати адресу в Google Maps ↗</a></div></article>`;
 }
@@ -326,6 +329,16 @@ async function addSpecialty(clinic,inputId,preservedSpecialty=""){
   const toggle=[...$("results").querySelectorAll("[data-toggle-specialties]")].find(el=>norm(el.dataset.clinic)===norm(clinic));
   if(toggle){const panel=$(toggle.getAttribute("aria-controls"));if(panel){panel.hidden=false;toggle.setAttribute("aria-expanded","true");}}
  }catch(e){setStatus(`Не вдалося зберегти: ${e.message}`,true);}
+}
+async function deleteBaseSpecialty(clinic,specialty){
+ if(!PROFILE?.is_admin)return;
+ if(!confirm(`Приховати спеціальність «${specialty}» у клініці «${clinic}»?`))return;
+ try{
+  await api(`/rest/v1/${SPECIALTY_VISIBILITY_TABLE}?on_conflict=clinic_name,specialty`,{method:"POST",headers:{"Content-Type":"application/json",Prefer:"resolution=merge-duplicates,return=minimal"},body:JSON.stringify({clinic_name:clinic,specialty,is_hidden:true,updated_by:PROFILE.surname,user_id:SESSION.user.id})});
+  HIDDEN_SPECIALTIES=HIDDEN_SPECIALTIES.filter(x=>!(norm(x.clinic_name)===norm(clinic)&&norm(x.specialty)===norm(specialty)));
+  HIDDEN_SPECIALTIES.push({clinic_name:clinic,specialty,is_hidden:true});
+  setStatus(`Спеціальність «${specialty}» приховано у клініці «${clinic}».`);run();
+ }catch(e){setStatus(`Не вдалося видалити спеціальність: ${e.message}`,true);}
 }
 async function deleteSpecialty(id){
  if(!PROFILE?.is_admin)return;if(!confirm("Видалити цю додану спеціальність? Дію не можна скасувати."))return;
